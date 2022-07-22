@@ -7,15 +7,9 @@
   pointer-events: none;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
 .App-header {
   background-color: #282c34;
-  min-height: 100vh;
+  min-height: 60vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,15 +18,23 @@
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.Grid-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-gap: 8px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.Test-query {
+  background-color: #61dafb;
+  border-right: 1px solid #101010;
+}
+
+.Deferred-query {
+  background-color: #61dafb;
+  border-right: 1px solid #101010;
+}
+
+.Nondeferred-query {
+  background-color: #61dafb;
+  border-left: 1px solid #101010;
 }
