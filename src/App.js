@@ -32,7 +32,7 @@ const DEFERRED_QUERY = gql`
   query Dimensions {
     allProducts {
       delivery {
-        ...MyFragment @defer(label: "exampleDefer")
+        ...MyFragment @defer
       }
       sku
       id
@@ -69,9 +69,10 @@ function TestQuery() {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
 
-  return data.allProducts.map(({ id }) => (
+  return data.allProducts.map(({ id, estimatedDelivery }) => (
     <div key={id}>
       <p>{id}</p>
+      <p>{estimatedDelivery}</p>
     </div>
   ));
 }
@@ -85,6 +86,7 @@ function DeferredProducts() {
   return data.allProducts.map(({ id, estimatedDelivery }) => (
     <div key={id}>
       <p>{id}</p>
+      <p>{estimatedDelivery}</p>
     </div>
   ));
 }
@@ -98,6 +100,7 @@ function NonDeferredProducts() {
   return data.allProducts.map(({ id, estimatedDelivery }) => (
     <div key={id}>
       <p>{id}</p>
+      <p>{estimatedDelivery}</p>
     </div>
   ));
 }

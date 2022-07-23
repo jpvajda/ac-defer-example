@@ -26,15 +26,12 @@
 
 .Test-query {
   background-color: #61dafb;
-  border-right: 1px solid #101010;
 }
 
 .Deferred-query {
   background-color: #61dafb;
-  border-right: 1px solid #101010;
 }
 
 .Nondeferred-query {
   background-color: #61dafb;
-  border-left: 1px solid #101010;
 }
