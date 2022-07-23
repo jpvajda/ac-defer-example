@@ -69,10 +69,11 @@ function TestQuery() {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
 
-  return data.allProducts.map(({ id, estimatedDelivery }) => (
+  return data.allProducts.map(({ id, estimatedDelivery, fastestDelivery }) => (
     <div key={id}>
       <p>{id}</p>
       <p>{estimatedDelivery}</p>
+      <p>{fastestDelivery}</p>
     </div>
   ));
 }
@@ -83,10 +84,11 @@ function DeferredProducts() {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
 
-  return data.allProducts.map(({ id, estimatedDelivery }) => (
+  return data.allProducts.map(({ id, estimatedDelivery, fastestDelivery }) => (
     <div key={id}>
       <p>{id}</p>
       <p>{estimatedDelivery}</p>
+      <p>{fastestDelivery}</p>
     </div>
   ));
 }
@@ -97,10 +99,11 @@ function NonDeferredProducts() {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
 
-  return data.allProducts.map(({ id, estimatedDelivery }) => (
+  return data.allProducts.map(({ id, estimatedDelivery, fastestDelivery }) => (
     <div key={id}>
       <p>{id}</p>
       <p>{estimatedDelivery}</p>
+      <p>{fastestDelivery}</p>
     </div>
   ));
 }
@@ -123,7 +126,7 @@ function App() {
             <DeferredProducts />
           </div>
           <div>
-            <h2 className="Nondeferred-query">A nondeferred query ⏲️</h2>
+            <h2 className="Nondeferred-query">A non-deferred query ⏲️</h2>
             <NonDeferredProducts />
           </div>
         </div>
