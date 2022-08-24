@@ -1,4 +1,3 @@
-import logo from "./logo.png";
 import "./App.css";
 import {
   ApolloClient,
@@ -9,103 +8,94 @@ import {
 } from "@apollo/client";
 
 const client = new ApolloClient({
-  uri: "http://localhost:4000/",
+  uri: "http://localhost:4000/graphql",
   cache: new InMemoryCache(),
 });
 
-// a test query
+const MY_USER_INFO_FRAGMENT = gql`
+  # Basic info (fast)
+  fragment UserInfoBasic on UserInfo {
+    firstName
+    lastName
+    email
+  }
+`;
+
+const MY_PROJECTS_FRAGMENT = gql`
+  # Projects (slow)
+  fragment UserInfoProjects on UserInfo {
+    projects {
+      id
+      name
+      numberOfStars
+    }
+  }
+`;
 
 const TEST_QUERY = gql`
-  query Query {
-    allProducts {
-      id
-      delivery {
-        estimatedDelivery
-        fastestDelivery
-      }
+  query MeQuery {
+    me {
+      ...UserInfoBasic
+      ...UserInfoProjects
     }
   }
+  ${MY_USER_INFO_FRAGMENT}
+  ${MY_PROJECTS_FRAGMENT}
 `;
 
-// a deferred query
-const DEFERRED_QUERY = gql`
-  query Dimensions {
-    allProducts {
-      delivery {
-        ...MyFragment @defer
-      }
-      sku
-      id
+const TEST_DEFERRED_QUERY = gql`
+  query DeferredMeQuery {
+    me {
+      ...UserInfoBasic
+      ...UserInfoProjects @defer
     }
   }
-
-  fragment MyFragment on DeliveryEstimates {
-    estimatedDelivery
-    fastestDelivery
-  }
+  ${MY_USER_INFO_FRAGMENT}
+  ${MY_PROJECTS_FRAGMENT}
 `;
 
-// a non-deferred query
-const NON_DEFERRED_QUERY = gql`
-  query Dimensions {
-    allProducts {
-      delivery {
-        ...MyFragment
-      }
-      sku
-      id
-    }
-  }
-
-  fragment MyFragment on DeliveryEstimates {
-    estimatedDelivery
-    fastestDelivery
-  }
-`;
-
-function TestQuery() {
+function NonDeferred() {
   const { loading, error, data } = useQuery(TEST_QUERY);
-
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
-
-  return data.allProducts.map(({ id, estimatedDelivery, fastestDelivery }) => (
-    <div key={id}>
-      <p>{id}</p>
-      <p>{estimatedDelivery}</p>
-      <p>{fastestDelivery}</p>
+  return (
+    <div>
+      <p>First name: {data.me.firstName}</p>
+      <p>Last name: {data.me.lastName}</p>
+      <p>Email: {data.me.email}</p>
+      {!data?.me?.projects
+        ? "Loading projects..."
+        : data.me.projects.map(({ id, name, numberOfStars }) => (
+            <div key={id}>
+              <p>Id: {id}</p>
+              <p>Name: {name}</p>
+              <p># of stars: {numberOfStars}</p>
+            </div>
+          ))}
     </div>
-  ));
+  );
 }
 
-function DeferredProducts() {
-  const { loading, error, data } = useQuery(DEFERRED_QUERY);
-
+function Deferred() {
+  const { loading, error, data } = useQuery(TEST_DEFERRED_QUERY);
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
-
-  return data.allProducts.map(({ id, estimatedDelivery, fastestDelivery }) => (
-    <div key={id}>
-      <p>{id}</p>
-      <p>{estimatedDelivery}</p>
-      <p>{fastestDelivery}</p>
-    </div>
-  ));
-}
-
-function NonDeferredProducts() {
-  const { loading, error, data } = useQuery(NON_DEFERRED_QUERY);
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error :(</p>;
-
-  return data.allProducts.map(({ id, estimatedDelivery, fastestDelivery }) => (
-    <div key={id}>
-      <p>{id}</p>
-      <p>{estimatedDelivery}</p>
-      <p>{fastestDelivery}</p>
-    </div>
-  ));
+  return (
+    <>
+      <p>First name: {data.me.firstName}</p>
+      <p>Last name: {data.me.lastName}</p>
+      <p>Email: {data.me.email}</p>
+      {!data?.me?.projects
+        ? "Loading projects..."
+        : data.me.projects.map(({ id, name, numberOfStars }) => (
+            <div key={id}>
+              <p>Id: {id}</p>
+              <p>Name: {name}</p>
+              <p># of stars: {numberOfStars}</p>
+            </div>
+          ))}
+    </>
+  );
 }
 
 function App() {
@@ -113,21 +103,16 @@ function App() {
     <ApolloProvider client={client}>
       <div className="App">
         <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
           <p>Testing @defer with Apollo Router.</p>
         </header>
         <div className="Grid-column">
           <div>
-            <h2 className="Test-query">A test query 🧪 </h2>
-            <TestQuery />
+            <h2 className="Nondeferred-query">A non-deferred query ⏲️</h2>
+            <NonDeferred />
           </div>
           <div>
             <h2 className="Deferred-query">A deferred query 🚀</h2>
-            <DeferredProducts />
-          </div>
-          <div>
-            <h2 className="Nondeferred-query">A non-deferred query ⏲️</h2>
-            <NonDeferredProducts />
+            <Deferred />
           </div>
         </div>
       </div>
