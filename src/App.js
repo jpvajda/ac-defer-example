@@ -1,4 +1,3 @@
-import logo from "./logo.png";
 import "./App.css";
 import {
   ApolloClient,
@@ -13,99 +12,72 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
 });
 
-// a test query
-
-const TEST_QUERY = gql`
-  query Query {
-    allProducts {
-      id
-      delivery {
-        estimatedDelivery
-        fastestDelivery
-      }
-    }
+const MY_FRAGMENT = gql`
+  fragment MyFragment on DeliveryEstimates {
+    estimatedDelivery
+    fastestDelivery
   }
 `;
 
 // a deferred query
 const DEFERRED_QUERY = gql`
-  query Dimensions {
+  query deferVariation {
     allProducts {
       delivery {
         ...MyFragment @defer
       }
-      sku
+      sku,
       id
     }
   }
-
-  fragment MyFragment on DeliveryEstimates {
-    estimatedDelivery
-    fastestDelivery
-  }
+  ${MY_FRAGMENT}
 `;
 
 // a non-deferred query
 const NON_DEFERRED_QUERY = gql`
-  query Dimensions {
+  query deferVariation {
     allProducts {
       delivery {
         ...MyFragment
       }
-      sku
+      sku,
       id
     }
   }
-
-  fragment MyFragment on DeliveryEstimates {
-    estimatedDelivery
-    fastestDelivery
-  }
+  ${MY_FRAGMENT}
 `;
 
-function TestQuery() {
-  const { loading, error, data } = useQuery(TEST_QUERY);
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error :(</p>;
-
-  return data.allProducts.map(({ id, estimatedDelivery, fastestDelivery }) => (
-    <div key={id}>
-      <p>{id}</p>
-      <p>{estimatedDelivery}</p>
-      <p>{fastestDelivery}</p>
-    </div>
-  ));
-}
-
 function DeferredProducts() {
-  const { loading, error, data } = useQuery(DEFERRED_QUERY);
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error :(</p>;
-
-  return data.allProducts.map(({ id, estimatedDelivery, fastestDelivery }) => (
-    <div key={id}>
-      <p>{id}</p>
-      <p>{estimatedDelivery}</p>
-      <p>{fastestDelivery}</p>
-    </div>
-  ));
+  return Render(DEFERRED_QUERY)
 }
 
 function NonDeferredProducts() {
-  const { loading, error, data } = useQuery(NON_DEFERRED_QUERY);
+  return Render(NON_DEFERRED_QUERY)
+}
+
+function Render(query) {
+  const { loading, error, data } = useQuery(query);
 
   if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error :(</p>;
+  if (error) {
+	console.error(error);
+	return <p>Error :(</p>;
+  }
 
-  return data.allProducts.map(({ id, estimatedDelivery, fastestDelivery }) => (
-    <div key={id}>
-      <p>{id}</p>
-      <p>{estimatedDelivery}</p>
-      <p>{fastestDelivery}</p>
+  return (
+    <div>
+    {data.allProducts.map(({ id, sku, delivery }) =>
+      <div key={id}>
+        <b>{id} - {sku}</b>
+        <p>Delivery:{' '}
+          <span>{delivery.fastestDelivery}</span>{' - '}
+          <span>{delivery.estimatedDelivery}</span>
+        </p>
+
+      </div>
+    )}
     </div>
-  ));
+  )
 }
 
 function App() {
@@ -113,21 +85,16 @@ function App() {
     <ApolloProvider client={client}>
       <div className="App">
         <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
           <p>Testing @defer with Apollo Router.</p>
         </header>
         <div className="Grid-column">
           <div>
-            <h2 className="Test-query">A test query 🧪 </h2>
-            <TestQuery />
+            <h2 className="Nondeferred-query">A non-deferred query ⏲️</h2>
+            <NonDeferredProducts />
           </div>
           <div>
             <h2 className="Deferred-query">A deferred query 🚀</h2>
             <DeferredProducts />
-          </div>
-          <div>
-            <h2 className="Nondeferred-query">A non-deferred query ⏲️</h2>
-            <NonDeferredProducts />
           </div>
         </div>
       </div>
