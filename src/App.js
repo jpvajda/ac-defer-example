@@ -8,94 +8,76 @@ import {
 } from "@apollo/client";
 
 const client = new ApolloClient({
-  uri: "http://localhost:4000/graphql",
+  uri: "http://localhost:4000/",
   cache: new InMemoryCache(),
 });
 
-const MY_USER_INFO_FRAGMENT = gql`
-  # Basic info (fast)
-  fragment UserInfoBasic on UserInfo {
-    firstName
-    lastName
-    email
+const MY_FRAGMENT = gql`
+  fragment MyFragment on DeliveryEstimates {
+    estimatedDelivery
+    fastestDelivery
   }
 `;
 
-const MY_PROJECTS_FRAGMENT = gql`
-  # Projects (slow)
-  fragment UserInfoProjects on UserInfo {
-    projects {
+// a deferred query
+const DEFERRED_QUERY = gql`
+  query deferVariation {
+    allProducts {
+      delivery {
+        ...MyFragment @defer
+      }
+      sku,
       id
-      name
-      numberOfStars
     }
   }
+  ${MY_FRAGMENT}
 `;
 
-const TEST_QUERY = gql`
-  query MeQuery {
-    me {
-      ...UserInfoBasic
-      ...UserInfoProjects
+// a non-deferred query
+const NON_DEFERRED_QUERY = gql`
+  query deferVariation {
+    allProducts {
+      delivery {
+        ...MyFragment
+      }
+      sku,
+      id
     }
   }
-  ${MY_USER_INFO_FRAGMENT}
-  ${MY_PROJECTS_FRAGMENT}
+  ${MY_FRAGMENT}
 `;
 
-const TEST_DEFERRED_QUERY = gql`
-  query DeferredMeQuery {
-    me {
-      ...UserInfoBasic
-      ...UserInfoProjects @defer
-    }
-  }
-  ${MY_USER_INFO_FRAGMENT}
-  ${MY_PROJECTS_FRAGMENT}
-`;
-
-function NonDeferred() {
-  const { loading, error, data } = useQuery(TEST_QUERY);
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error :(</p>;
-  return (
-    <div>
-      <p>First name: {data.me.firstName}</p>
-      <p>Last name: {data.me.lastName}</p>
-      <p>Email: {data.me.email}</p>
-      {!data?.me?.projects
-        ? "Loading projects..."
-        : data.me.projects.map(({ id, name, numberOfStars }) => (
-            <div key={id}>
-              <p>Id: {id}</p>
-              <p>Name: {name}</p>
-              <p># of stars: {numberOfStars}</p>
-            </div>
-          ))}
-    </div>
-  );
+function DeferredProducts() {
+  return Render(DEFERRED_QUERY)
 }
 
-function Deferred() {
-  const { loading, error, data } = useQuery(TEST_DEFERRED_QUERY);
+function NonDeferredProducts() {
+  return Render(NON_DEFERRED_QUERY)
+}
+
+function Render(query) {
+  const { loading, error, data } = useQuery(query);
+
   if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error :(</p>;
+  if (error) {
+	console.error(error);
+	return <p>Error :(</p>;
+  }
+
   return (
-    <>
-      <p>First name: {data.me.firstName}</p>
-      <p>Last name: {data.me.lastName}</p>
-      <p>Email: {data.me.email}</p>
-      {!data?.me?.projects
-        ? "Loading projects..."
-        : data.me.projects.map(({ id, name, numberOfStars }) => (
-            <div key={id}>
-              <p>Id: {id}</p>
-              <p>Name: {name}</p>
-              <p># of stars: {numberOfStars}</p>
-            </div>
-          ))}
-    </>
-  );
+    <div>
+    {data.allProducts.map(({ id, sku, delivery }) =>
+      <div key={id}>
+        <b>{id} - {sku}</b>
+        <p>Delivery:{' '}
+          <span>{delivery.fastestDelivery}</span>{' - '}
+          <span>{delivery.estimatedDelivery}</span>
+        </p>
+
+      </div>
+    )}
+    </div>
+  )
 }
 
 function App() {
@@ -108,11 +90,11 @@ function App() {
         <div className="Grid-column">
           <div>
             <h2 className="Nondeferred-query">A non-deferred query ⏲️</h2>
-            <NonDeferred />
+            <NonDeferredProducts />
           </div>
           <div>
             <h2 className="Deferred-query">A deferred query 🚀</h2>
-            <Deferred />
+            <DeferredProducts />
           </div>
         </div>
       </div>
