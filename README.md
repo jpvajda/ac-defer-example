@@ -4,7 +4,7 @@
 - This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 - This project can be used along with PR [#212](https://github.com/apollographql/supergraph-demo-fed2/pull/212) from the Fed2 Supergraph demo to run a mock Apollo Client application that uses Apollo Router with `@defer`.
 - To setup the Fed2 Supergraph demo please refer to the [README](https://github.com/apollographql/supergraph-demo-fed2#readme).
-- `Please note:` The Apollo Client doesn't yet support `@defer` and still is WIP see PR [#9598](https://github.com/apollographql/apollo-client/pull/9598)
+- `Please note:` The Apollo Client currently supports `@defer` locally see PR [#5](https://github.com/jpvajda/ac-defer-example/pull/5)for details.
 
 ## Available Scripts
 
